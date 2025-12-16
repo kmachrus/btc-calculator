@@ -92,6 +92,17 @@
       button{ padding:14px 12px; font-size:16px; }
       .btns{ gap:10px; }
     }
+
+    /* Desktop: input kiri, hasil kanan */
+    .split{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; align-items:start; }
+    .split .right{ position:sticky; top:14px; align-self:start; }
+    .split .right .out{ margin-top:0; }
+    .split .left .hr{ margin:12px 0 0; }
+
+    @media (max-width: 860px){
+      .split{ grid-template-columns: 1fr; }
+      .split .right{ position:static; }
+    }
 </style>
 </head>
 <body>
@@ -107,6 +118,9 @@
     <div class="grid">
       <div class="card" data-sec="buy">
         <h2>BUY</h2>
+
+        <div class="split">
+          <div class="left">
 
         <div class="row">
           <div>
@@ -139,6 +153,9 @@
 
         <div class="hr"></div>
 
+          </div>
+          <div class="right">
+
         <div class="out">
           <div class="kpi">
             <div class="box">
@@ -165,10 +182,17 @@
             </div>
           </div>
         </div>
+
+          </div>
+        </div>
+
       </div>
 
       <div class="card" data-sec="sell">
         <h2>SELL</h2>
+
+        <div class="split">
+          <div class="left">
 
         <div class="row">
           <div>
@@ -213,6 +237,9 @@
 
         <div class="hr"></div>
 
+          </div>
+          <div class="right">
+
         <div class="out">
           <div class="kpi">
             <div class="box">
@@ -229,6 +256,10 @@
             </div>
           </div>
         </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
 
