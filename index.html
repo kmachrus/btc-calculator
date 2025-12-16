@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kalkulator BTC</title>
+  <style>
+    :root { --card:#121a33; --muted:#9aa6c2; --text:#eaf0ff; --line:#22305a; --ok:#39d98a; --bad:#ff5c7a; }
+    *{ box-sizing:border-box; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body{ margin:0; background:linear-gradient(180deg,#070b16, #0b1020); color:var(--text); }
+    .wrap{ max-width:980px; margin:22px auto; padding:0 14px; }
+    h1{ margin:0 0 6px; font-size:20px; }
+    .sub{ color:var(--muted); margin:0 0 14px; font-size:12px; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+    @media (min-width:860px){ .grid{ grid-template-columns: 1fr 1fr; } }
+    .card{ background:rgba(18,26,51,.92); border:1px solid rgba(34,48,90,.65); border-radius:16px; padding:14px; box-shadow: 0 14px 40px rgba(0,0,0,.35); }
+    .card h2{ font-size:13px; margin:0 0 10px; color:#d8e2ff; letter-spacing:.2px; }
+    .row{ display:grid; grid-template-columns: 1fr; gap:10px; }
+    @media (min-width:560px){ .row{ grid-template-columns: 1fr 1fr; } }
+    label{ display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
+    input{
+      width:100%; padding:10px 12px; border-radius:12px;
+      border:1px solid rgba(34,48,90,.9); background:#0c1430; color:var(--text);
+      outline:none;
+    }
+    input:focus{ border-color:#3a57ff; box-shadow: 0 0 0 3px rgba(58,87,255,.15); }
+    .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+    button{
+      padding:10px 12px; border-radius:12px; border:1px solid rgba(34,48,90,.9);
+      background:#111a3d; color:var(--text); cursor:pointer;
+    }
+    button:hover{ filter:brightness(1.08); }
+    .primary{ background:linear-gradient(135deg,#3a57ff,#6a3bff); border-color:transparent; }
+    .danger{ background:#1a0f1a; border-color:rgba(255,92,122,.35); color:#ffd7de; }
+    .hr{ height:1px; background:rgba(34,48,90,.55); margin:12px 0; }
+    .out{ display:grid; gap:10px; }
+    .kpi{ display:grid; grid-template-columns: 1fr; gap:10px; }
+    @media (min-width:560px){ .kpi{ grid-template-columns: 1fr 1fr; } }
+    .box{ border:1px solid rgba(34,48,90,.65); background:rgba(12,20,48,.6); border-radius:14px; padding:12px; }
+    .box .t{ font-size:12px; color:var(--muted); }
+    .box .v{ font-size:16px; margin-top:6px; font-weight:600; letter-spacing:.2px; }
+    .small{ font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .ok{ color:var(--ok); }
+    .bad{ color:var(--bad); }
+    details{ border:1px solid rgba(34,48,90,.65); background:rgba(12,20,48,.45); border-radius:14px; padding:10px 12px; }
+    summary{ cursor:pointer; color:#d8e2ff; font-size:13px; user-select:none; }
+    summary::marker{ color:#9fb0ff; }
+    .settings{ margin-top:12px; }
+  
+    /* Mobile tabs */
+    .mnav{ display:none; gap:8px; padding:10px; margin:8px 0 12px; position:sticky; top:0; z-index:20;
+      background:rgba(7,11,22,.85); backdrop-filter: blur(10px); border:1px solid rgba(34,48,90,.45); border-radius:14px; }
+    .mnavbtn{ flex:1; padding:10px 10px; border-radius:12px; border:1px solid rgba(34,48,90,.9);
+      background:#0c1430; color:#d8e2ff; cursor:pointer; font-weight:700; letter-spacing:.2px; }
+    .mnavbtn.active{ background:linear-gradient(135deg,#3a57ff,#6a3bff); border-color:transparent; color:#fff; }
+
+    @media (max-width: 860px){
+      .mnav{ display:flex; }
+      /* show one section at a time */
+      .card[data-sec]{ display:none; }
+      body[data-view="buy"] .card[data-sec="buy"]{ display:block; }
+      body[data-view="sell"] .card[data-sec="sell"]{ display:block; }
+      body[data-view="settings"] .card[data-sec="settings"]{ display:block; }
+
+      /* bigger tap targets */
+      button{ width:100%; }
+      .btns{ display:grid; grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Kalkulator BTC</h1>
+    <div class="sub">Tulis BTC ↔ USDT otomatis • BUY fee potong BTC • SELL fee potong USDT • Auto-save</div>
+    <div class="mnav" role="tablist" aria-label="Menu">
+      <button class="mnavbtn active" data-view="buy" type="button">BUY</button>
+      <button class="mnavbtn" data-view="sell" type="button">SELL</button>
+      <button class="mnavbtn" data-view="settings" type="button">SETTINGS</button>
+    </div>
+
+    <div class="grid">
+      <div class="card" data-sec="buy">
+        <h2>BUY</h2>
+
+        <div class="row">
+          <div>
+            <label>Harga BUY (USDT/BTC)</label>
+            <input id="buyPrice" inputmode="decimal" placeholder="contoh: 90000" />
+          </div>
+          <div>
+            <label>BTC dibeli</label>
+            <input id="buyBtc" inputmode="decimal" placeholder="contoh: 0.00081" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>USDT (modal)</label>
+            <input id="buyUsdt" inputmode="decimal" placeholder="contoh: 69.8949" />
+            <div class="small" id="noteBuyUsdtIdr"> </div>
+          </div>
+          <div>
+            <label>—</label>
+            <input disabled value="Isi BTC utawa USDT (salah siji wae)" />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="buyBtn">Hitung BUY</button>
+          <button id="copyAvg">Copy avg → SELL</button>
+          <button class="danger" id="resetBuy">Reset</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="out">
+          <div class="kpi">
+            <div class="box">
+              <div class="t">BTC diterima</div>
+              <div class="v mono" id="outBuyRecv">—</div>
+              <div class="small mono" id="outBuyFeeLine">—</div>
+            </div>
+            <div class="box">
+              <div class="t">Total cost (USDT)</div>
+              <div class="v mono" id="outBuyCostUsdt">—</div>
+              <div class="small" id="outBuyCostIdrNote">—</div>
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="box">
+              <div class="t">Avg cost / BTC</div>
+              <div class="v mono" id="outBuyAvg">—</div>
+            </div>
+            <div class="box">
+              <div class="t">BEP sell price</div>
+              <div class="v mono" id="outBuyBep">—</div>
+              <div class="small">pakai fee SELL dari Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" data-sec="sell">
+        <h2>SELL</h2>
+
+        <div class="row">
+          <div>
+            <label>Harga SELL (USDT/BTC)</label>
+            <input id="sellPrice" inputmode="decimal" placeholder="contoh: 94800" />
+          </div>
+          <div>
+            <label>BTC dijual</label>
+            <input id="sellBtc" inputmode="decimal" placeholder="contoh: 0.00110551" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Target USDT net (opsional)</label>
+            <input id="sellTargetNet" inputmode="decimal" placeholder="contoh: 50" />
+            <div class="small" id="noteSellTargetIdr"> </div>
+          </div>
+          <div>
+            <label>—</label>
+            <input disabled value="Isi iki → Harga SELL otomatis keisi" />
+          </div>
+        </div>
+
+
+        <div class="row">
+          <div>
+            <label>USDT gross</label>
+            <input id="sellUsdtGross" inputmode="decimal" placeholder="contoh: 104.802348" />
+            <div class="small" id="noteSellGrossIdr"> </div>
+          </div>
+          <div>
+            <label>Avg cost / BTC (opsional)</label>
+            <input id="sellAvg" inputmode="decimal" placeholder="contoh: 87511.56" />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="sellBtn">Hitung SELL</button>
+          <button class="danger" id="resetSell">Reset</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="out">
+          <div class="kpi">
+            <div class="box">
+              <div class="t">USDT diterima (net)</div>
+              <div class="v mono" id="outSellNet">—</div>
+              <div class="small mono" id="outSellFeeLine">—</div>
+              <div class="small" id="outSellNetIdrNote">—</div>
+            </div>
+            <div class="box">
+              <div class="t">Profit / Loss (USDT)</div>
+              <div class="v mono" id="outSellProfit">—</div>
+              <div class="small mono" id="outSellProfitIdrNote">—</div>
+              <div class="small mono" id="outSellRoi">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="card" data-sec="settings">
+      <h2>SETTINGS</h2>
+      <div class="settings">
+        <details>
+
+        <summary>Settings (fee, fee tetap, kurs)</summary>
+
+        <div class="row" style="margin-top:6px;">
+          <div>
+            <label>Fee BUY (%)</label>
+            <input id="feeBuy" inputmode="decimal" placeholder="contoh: 0.4044" />
+          </div>
+          <div>
+            <label>Fee SELL (%)</label>
+            <input id="feeSell" inputmode="decimal" placeholder="contoh: 0.4044" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Fee tetap BUY (USDT)</label>
+            <input id="buyFixed" inputmode="decimal" placeholder="contoh: 0" />
+          </div>
+          <div>
+            <label>Fee tetap SELL (USDT)</label>
+            <input id="sellFixed" inputmode="decimal" placeholder="contoh: 0" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Kurs USD→IDR (opsional)</label>
+            <input id="usdIdr" inputmode="decimal" placeholder="contoh: 16000" />
+          </div>
+          <div>
+            <label>Reset semua</label>
+            <button class="danger" id="resetAll" style="width:100%;">Reset All</button>
+          </div>
+        </div>
+
+        <div class="small">Default: <span class="mono">0.4044%</span> (bisa kowe ganti).</div>
+      
+        </details>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function parseNum(v){
+    if (v === null || v === undefined) return NaN;
+    const s = String(v).trim()
+      .replace(/\s+/g,'')
+      .replace(/,/g,'.')
+      .replace(/[^\d.-]/g,'');
+    const n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function fmt(n, d=2){
+    if (!Number.isFinite(n)) return "—";
+    const abs = Math.abs(n);
+    const dec = abs >= 1000 ? 2 : d;
+    return n.toLocaleString('id-ID', { maximumFractionDigits: dec, minimumFractionDigits: 0 });
+  }
+
+  function fmtFixed(n, d=10){
+    if (!Number.isFinite(n)) return "—";
+    return n.toLocaleString('id-ID', { maximumFractionDigits: d, minimumFractionDigits: 0 });
+  }
+
+  function toPlain(n, maxDec=10){
+    if(!Number.isFinite(n)) return "";
+    let s = n.toFixed(maxDec);
+    s = s.replace(/\.?0+$/,'');
+    return s;
+  }
+function toPlain(n, maxDec=10){
+    if(!Number.isFinite(n)) return "";
+    let s = n.toFixed(maxDec);
+    s = s.replace(/\.?0+$/,'');
+    return s;
+  }
+
+  function updateInlineIdrNotes(){
+    const usdIdr = parseNum($("usdIdr").value);
+    const hasKurs = Number.isFinite(usdIdr) && usdIdr > 0;
+
+    const buyUsdt = parseNum($("buyUsdt").value);
+    $("noteBuyUsdtIdr").textContent = (hasKurs && Number.isFinite(buyUsdt) && buyUsdt > 0)
+      ? `≈ ${fmt(buyUsdt * usdIdr, 0)} IDR`
+      : " ";
+
+    const gross = parseNum($("sellUsdtGross").value);
+    $("noteSellGrossIdr").textContent = (hasKurs && Number.isFinite(gross) && gross > 0)
+      ? `≈ ${fmt(gross * usdIdr, 0)} IDR`
+      : " ";
+
+    const target = parseNum($("sellTargetNet").value);
+    $("noteSellTargetIdr").textContent = (hasKurs && Number.isFinite(target) && target > 0)
+      ? `≈ ${fmt(target * usdIdr, 0)} IDR`
+      : " ";
+  }
+
+
+  const KEY = "btc_calc_super_simple_v1";
+  const FIELDS = [
+    "buyPrice","buyBtc","buyUsdt",
+    "sellPrice","sellBtc","sellUsdtGross","sellAvg",
+    "sellTargetNet",
+    "feeBuy","feeSell","buyFixed","sellFixed","usdIdr"
+  ];
+
+  let isSyncing = false;
+  let buyLast = "btc";
+  let sellLast = "btc";
+
+  function save(){
+    const o = {};
+    FIELDS.forEach(id => o[id] = $(id).value);
+    localStorage.setItem(KEY, JSON.stringify(o));
+  }
+
+  function load(){
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    try{
+      const o = JSON.parse(raw);
+      FIELDS.forEach(id => { if(o[id] !== undefined) $(id).value = o[id]; });
+    }catch(e){}
+  }
+
+  function syncBuyPair(){
+    if(isSyncing) return;
+    const p = parseNum($("buyPrice").value);
+    if(!Number.isFinite(p) || p <= 0) return;
+
+    isSyncing = true;
+    try{
+      if(buyLast === "btc"){
+        const btc = parseNum($("buyBtc").value);
+        if(Number.isFinite(btc) && btc > 0){
+          $("buyUsdt").value = toPlain(btc * p, 8);
+        }
+      } else {
+        const usdt = parseNum($("buyUsdt").value);
+        if(Number.isFinite(usdt) && usdt > 0){
+          $("buyBtc").value = toPlain(usdt / p, 10);
+        }
+      }
+      updateInlineIdrNotes();
+    } finally { isSyncing = false; }
+  }
+
+  function syncSellPair(){
+    if(isSyncing) return;
+    const p = parseNum($("sellPrice").value);
+    if(!Number.isFinite(p) || p <= 0) return;
+
+    isSyncing = true;
+    try{
+      if(sellLast === "btc"){
+        const btc = parseNum($("sellBtc").value);
+        if(Number.isFinite(btc) && btc > 0){
+          $("sellUsdtGross").value = toPlain(btc * p, 8);
+        }
+      } else {
+        const usdt = parseNum($("sellUsdtGross").value);
+        if(Number.isFinite(usdt) && usdt > 0){
+          $("sellBtc").value = toPlain(usdt / p, 10);
+        }
+      }
+      updateInlineIdrNotes();
+    } finally { isSyncing = false; }
+  }
+
+function syncTargetNetToPrice(){
+    if(isSyncing) return;
+    const target = parseNum($("sellTargetNet").value);
+    if(!(Number.isFinite(target) && target > 0)) return;
+
+    const btc = parseNum($("sellBtc").value);
+    if(!(Number.isFinite(btc) && btc > 0)) return;
+
+    const feeSellPct = parseNum($("feeSell").value) / 100;
+    const fs = Number.isFinite(feeSellPct) && feeSellPct >= 0 ? feeSellPct : 0;
+
+    const fixed = parseNum($("sellFixed").value);
+    const fixedUsdt = Number.isFinite(fixed) ? fixed : 0;
+
+    const denom = btc * (1 - fs);
+    if(!(Number.isFinite(denom) && denom > 0)) return;
+
+    // net = btc*price*(1-fs) - fixed  => price = (net + fixed) / (btc*(1-fs))
+    const price = (target + fixedUsdt) / denom;
+
+    if(!(Number.isFinite(price) && price > 0)) return;
+
+    isSyncing = true;
+    try{
+      $("sellPrice").value = toPlain(price, 6);
+    } finally { isSyncing = false; }
+
+    // update gross based on btc + price
+    syncSellPair();
+    updateInlineIdrNotes();
+    updateInlineIdrNotes();
+    save();
+  }
+
+  function setDefaultsIfEmpty(){
+    if(!$("feeBuy").value.trim()) $("feeBuy").value = "0.4044";
+    if(!$("feeSell").value.trim()) $("feeSell").value = "0.4044";
+    if(!$("buyFixed").value.trim()) $("buyFixed").value = "0";
+    if(!$("sellFixed").value.trim()) $("sellFixed").value = "0";
+  }
+
+  function buyErr(msg){
+    $("outBuyRecv").textContent = "—";
+    $("outBuyFeeLine").textContent = msg || "—";
+    $("outBuyCostUsdt").textContent = "—";
+    $("outBuyCostIdrNote").textContent = "—";
+    $("outBuyAvg").textContent = "—";
+    $("outBuyBep").textContent = "—";
+    save();
+  }
+
+  function buyCalc(){
+    syncBuyPair();
+
+    const p = parseNum($("buyPrice").value);
+    const btc = parseNum($("buyBtc").value);
+    const usdt = parseNum($("buyUsdt").value);
+
+    const feeBuyPct = parseNum($("feeBuy").value) / 100;
+    const fb = Number.isFinite(feeBuyPct) && feeBuyPct >= 0 ? feeBuyPct : 0;
+
+    const fixed = parseNum($("buyFixed").value);
+    const fixedUsdt = Number.isFinite(fixed) ? fixed : 0;
+
+    const usdIdr = parseNum($("usdIdr").value);
+
+    if(!Number.isFinite(p) || p <= 0) return buyErr("Harga BUY kudu bener.");
+    if(!Number.isFinite(btc) || btc <= 0) return buyErr("Isi BTC utawa USDT.");
+
+    const usdtSpent = (Number.isFinite(usdt) && usdt > 0) ? usdt : (btc * p);
+
+    const btcFee = btc * fb;
+    const btcRecv = btc - btcFee;
+
+    if(!(Number.isFinite(btcRecv) && btcRecv > 0)) return buyErr("Fee BUY kakehan / input salah.");
+
+    const totalCostUsdt = usdtSpent + fixedUsdt;
+    const avgCost = totalCostUsdt / btcRecv;
+
+    const feeSellPct = parseNum($("feeSell").value) / 100;
+    const fs = (Number.isFinite(feeSellPct) && feeSellPct >= 0) ? feeSellPct : 0;
+    const bep = (1 - fs) > 0 ? (avgCost / (1 - fs)) : NaN;
+
+    $("outBuyRecv").textContent = fmtFixed(btcRecv, 8);
+    $("outBuyFeeLine").textContent = `Fee BUY (BTC) ${fmtFixed(btcFee, 8)}`;
+
+    $("outBuyCostUsdt").textContent = fmt(totalCostUsdt, 6);
+    if(Number.isFinite(usdIdr) && usdIdr > 0){
+      $("outBuyCostIdrNote").textContent = `≈ ${fmt(totalCostUsdt * usdIdr, 0)} IDR`;
+    } else {
+      $("outBuyCostIdrNote").textContent = " ";
+    }
+
+    $("outBuyAvg").textContent = fmt(avgCost, 6);
+    $("outBuyBep").textContent = Number.isFinite(bep) ? fmt(bep, 6) : "—";
+
+    try{ localStorage.setItem("btc_simple_avg_cost", String(avgCost)); }catch(e){}
+    updateInlineIdrNotes();
+    save();
+  }
+
+  function sellErr(msg){
+    $("outSellNet").textContent = "—";
+    $("outSellFeeLine").textContent = msg || "—";
+    $("outSellNetIdrNote").textContent = "—";
+    $("outSellProfit").textContent = "—";
+    $("outSellProfitIdrNote").textContent = "—";
+    $("outSellProfit").classList.remove("ok","bad");
+    $("outSellRoi").textContent = "—";
+    $("outSellRoi").classList.remove("ok","bad");
+    save();
+  }
+
+  function sellCalc(){
+    syncSellPair();
+
+    const p = parseNum($("sellPrice").value);
+    const btc = parseNum($("sellBtc").value);
+    const grossIn = parseNum($("sellUsdtGross").value);
+
+    const feeSellPct = parseNum($("feeSell").value) / 100;
+    const fs = Number.isFinite(feeSellPct) && feeSellPct >= 0 ? feeSellPct : 0;
+
+    const fixed = parseNum($("sellFixed").value);
+    const fixedUsdt = Number.isFinite(fixed) ? fixed : 0;
+
+    const usdIdr = parseNum($("usdIdr").value);
+
+    if(!Number.isFinite(p) || p <= 0) return sellErr("Harga SELL kudu bener.");
+    if(!Number.isFinite(btc) || btc <= 0) return sellErr("Isi BTC utawa USDT gross.");
+
+    const gross = (Number.isFinite(grossIn) && grossIn > 0) ? grossIn : (btc * p);
+    const feeUsdt = gross * fs;
+    const net = (gross - feeUsdt) - fixedUsdt;
+
+    $("outSellNet").textContent = fmt(net, 6);
+    $("outSellFeeLine").textContent = `Fee SELL ${fmt(feeUsdt,6)} • Fee tetap ${fmt(fixedUsdt,6)}`;
+
+    if(Number.isFinite(usdIdr) && usdIdr > 0){
+      $("outSellNetIdrNote").textContent = `≈ ${fmt(net * usdIdr, 0)} IDR`;
+    } else {
+      $("outSellNetIdrNote").textContent = " ";
+    }
+
+    const avg = parseNum($("sellAvg").value);
+    if(Number.isFinite(avg) && avg > 0){
+      const costBasis = btc * avg;
+      const profit = net - costBasis;
+
+      $("outSellProfit").textContent = (profit >= 0 ? "+" : "") + fmt(profit, 6);
+      $("outSellProfit").classList.remove("ok","bad");
+      $("outSellProfit").classList.add(profit >= 0 ? "ok" : "bad");
+
+
+      if(Number.isFinite(usdIdr) && usdIdr > 0){
+        $("outSellProfitIdrNote").textContent = `≈ ${fmt(profit * usdIdr, 0)} IDR`;
+      } else {
+        $("outSellProfitIdrNote").textContent = " ";
+      }
+      const roi = profit / costBasis;
+      $("outSellRoi").textContent = `ROI ${(roi*100).toFixed(2)}%`;
+      $("outSellRoi").classList.remove("ok","bad");
+      $("outSellRoi").classList.add(roi >= 0 ? "ok" : "bad");
+    } else {
+      $("outSellProfit").textContent = "—";
+    $("outSellProfitIdrNote").textContent = "—";
+      $("outSellProfit").classList.remove("ok","bad");
+      $("outSellRoi").textContent = " ";
+      $("outSellRoi").classList.remove("ok","bad");
+    }
+
+    save();
+  }
+
+  function copyAvg(){
+    const v = parseNum(localStorage.getItem("btc_simple_avg_cost"));
+    if(!Number.isFinite(v) || v <= 0) return;
+    $("sellAvg").value = toPlain(v, 6);
+    save();
+    sellCalc();
+  }
+
+  function resetBuy(){
+    ["buyPrice","buyBtc","buyUsdt"].forEach(id => $(id).value = "");
+    buyErr("Reset.");
+    setDefaultsIfEmpty();
+    save();
+  }
+
+  function resetSell(){
+    ["sellPrice","sellBtc","sellUsdtGross","sellAvg","sellTargetNet"].forEach(id => $(id).value = "");
+    sellErr("Reset.");
+    setDefaultsIfEmpty();
+    save();
+  }
+
+  function resetAll(){
+    localStorage.removeItem(KEY);
+    localStorage.removeItem("btc_simple_avg_cost");
+    FIELDS.forEach(id => $(id).value = "");
+    setDefaultsIfEmpty();
+    buyErr("Reset.");
+    sellErr("Reset.");
+    save();
+  }
+
+  // init
+  load();
+  setDefaultsIfEmpty();
+
+  // BUY sync
+  $("buyBtc").addEventListener("input", () => { buyLast = "btc"; syncBuyPair(); save(); });
+  $("buyUsdt").addEventListener("input", () => { buyLast = "usdt"; syncBuyPair(); save(); });
+  $("buyPrice").addEventListener("input", () => { syncBuyPair(); save(); });
+
+  // SELL sync
+  $("sellBtc").addEventListener("input", () => { sellLast = "btc"; if($("sellTargetNet").value.trim()) { syncTargetNetToPrice(); } else { syncSellPair(); save(); } });
+  $("sellUsdtGross").addEventListener("input", () => { sellLast = "usdt"; if(!isSyncing) $("sellTargetNet").value = ""; syncSellPair(); save(); });
+  $("sellPrice").addEventListener("input", () => { if(!isSyncing) $("sellTargetNet").value = ""; syncSellPair(); save(); });
+  $("sellTargetNet").addEventListener("input", () => { syncTargetNetToPrice(); updateInlineIdrNotes(); });
+
+  // settings autosave
+  ["feeBuy","feeSell","buyFixed","sellFixed","usdIdr"].forEach(id => $(id).addEventListener("input", () => { save(); if(id==="feeSell"||id==="sellFixed"){ if($("sellTargetNet").value.trim()) syncTargetNetToPrice(); } }));
+
+  // buttons
+  $("buyBtn").addEventListener("click", buyCalc);
+  $("sellBtn").addEventListener("click", sellCalc);
+  $("copyAvg").addEventListener("click", copyAvg);
+  $("resetBuy").addEventListener("click", resetBuy);
+  $("resetSell").addEventListener("click", resetSell);
+  $("resetAll").addEventListener("click", resetAll);
+
+  // initial calc (if fields present)
+  setTimeout(() => { try{ buyCalc(); updateInlineIdrNotes(); }catch(e){} }, 80);
+  setTimeout(() => { try{ if($("sellTargetNet").value.trim()) syncTargetNetToPrice(); sellCalc(); updateInlineIdrNotes(); }catch(e){} }, 120);
+
+
+  // Mobile tabs
+  function setView(v){
+    document.body.dataset.view = v;
+    document.querySelectorAll(".mnavbtn").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+    try{ localStorage.setItem("btc_view", v); }catch(e){}
+  }
+  document.querySelectorAll(".mnavbtn").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+  // default view
+  try{
+    const saved = localStorage.getItem("btc_view");
+    if(saved) setView(saved);
+    else setView("buy");
+  }catch(e){
+    setView("buy");
+  }
+</script>
+</body>
+</html>
