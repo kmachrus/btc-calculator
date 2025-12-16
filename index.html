@@ -160,6 +160,53 @@
         background: transparent;
       }
     }
+
+    /* ===== Mobile portrait: tetep 2 kolom (input kiri, hasil kanan) ===== */
+    @media (max-width: 860px){
+      /* Mateni aturan versi sadurunge sing nggawe 1 kolom */
+      .split{
+        grid-template-columns: 1.15fr 0.85fr !important;  /* kiri luwih amba */
+        grid-template-rows: auto !important;
+        height: auto !important;
+      }
+      .split .left{
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        max-height: calc(100dvh - 210px); /* ben input iso discroll, hasil tetep katon */
+        padding-right: 2px;
+      }
+      .split .right{
+        position: sticky !important;
+        top: 78px; /* ngisor tab */
+        align-self: start;
+        border-top: none !important;
+        padding-top: 0 !important;
+        background: transparent !important;
+      }
+
+      /* Rekapan kanan luwih ringkes (ngurangi space) */
+      .split .right .kpi{ grid-template-columns: 1fr !important; }
+      .box{ padding:10px; }
+      .box .t{ font-size:12px; }
+      .box .v{ font-size:15px; }
+
+      /* Font input tetep >=16px supaya ora auto-zoom */
+      label{ font-size:13px; }
+      input{ font-size:16px !important; padding:12px 12px; }
+      button{ font-size:15px; padding:12px 10px; }
+
+      /* Kecilno jarak biar muat */
+      .card{ padding:14px; }
+      .row{ gap:8px; }
+      .btns{ gap:8px; }
+
+      /* Hapus batas height card 1 layar (biar fleksibel) */
+      body[data-view="buy"] .card[data-sec="buy"],
+      body[data-view="sell"] .card[data-sec="sell"]{
+        height: auto !important;
+        overflow: visible !important;
+      }
+    }
 </style>
 </head>
 <body>
