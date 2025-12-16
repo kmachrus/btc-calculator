@@ -67,6 +67,31 @@
       button{ width:100%; }
       .btns{ display:grid; grid-template-columns: 1fr; }
     }
+
+    /* Bigger, no-zoom inputs on phone (iOS zoom happens if input font-size < 16px) */
+    html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+    body{ font-size:16px; }
+    input, button, select, textarea{ font-size:16px; }
+
+    @media (max-width: 860px){
+      .wrap{ margin:14px auto; padding:0 12px; }
+      h1{ font-size:24px; }
+      .sub{ font-size:14px; line-height:1.35; }
+      .card{ padding:16px; border-radius:18px; }
+      .card h2{ font-size:14px; }
+      label{ font-size:14px; }
+      input{
+        padding:14px 14px;
+        border-radius:14px;
+        font-size:18px; /* >=16px biar ora auto-zoom */
+      }
+      .small{ font-size:13px; }
+      .box .t{ font-size:13px; }
+      .box .v{ font-size:18px; }
+      .mnavbtn{ font-size:16px; padding:12px 10px; }
+      button{ padding:14px 12px; font-size:16px; }
+      .btns{ gap:10px; }
+    }
 </style>
 </head>
 <body>
@@ -284,17 +309,11 @@
   function toPlain(n, maxDec=10){
     if(!Number.isFinite(n)) return "";
     let s = n.toFixed(maxDec);
-    s = s.replace(/\.?0+$/,'');
-    return s;
-  }
-function toPlain(n, maxDec=10){
-    if(!Number.isFinite(n)) return "";
-    let s = n.toFixed(maxDec);
-    s = s.replace(/\.?0+$/,'');
+    s = s.replace(/\.?0+$/,"");
     return s;
   }
 
-  function updateInlineIdrNotes(){
+function updateInlineIdrNotes(){
     const usdIdr = parseNum($("usdIdr").value);
     const hasKurs = Number.isFinite(usdIdr) && usdIdr > 0;
 
@@ -416,7 +435,6 @@ function syncTargetNetToPrice(){
     // update gross based on btc + price
     syncSellPair();
     updateInlineIdrNotes();
-    updateInlineIdrNotes();
     save();
   }
 
@@ -492,7 +510,7 @@ function syncTargetNetToPrice(){
     $("outSellFeeLine").textContent = msg || "—";
     $("outSellNetIdrNote").textContent = "—";
     $("outSellProfit").textContent = "—";
-    $("outSellProfitIdrNote").textContent = "—";
+    $("outSellProfitIdrNote").textContent = " ";
     $("outSellProfit").classList.remove("ok","bad");
     $("outSellRoi").textContent = "—";
     $("outSellRoi").classList.remove("ok","bad");
@@ -551,7 +569,7 @@ function syncTargetNetToPrice(){
       $("outSellRoi").classList.add(roi >= 0 ? "ok" : "bad");
     } else {
       $("outSellProfit").textContent = "—";
-    $("outSellProfitIdrNote").textContent = "—";
+    $("outSellProfitIdrNote").textContent = " ";
       $("outSellProfit").classList.remove("ok","bad");
       $("outSellRoi").textContent = " ";
       $("outSellRoi").classList.remove("ok","bad");
