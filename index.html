@@ -207,13 +207,30 @@
         overflow: visible !important;
       }
     }
+
+    /* Mobile: tombol Hitung/Reset tetep katon (ora mendelep) */
+    @media (max-width: 860px){
+      .split .left{ padding-bottom: 10px; }
+      .split .left .btns{
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        padding: 10px 0 6px;
+        background: linear-gradient(180deg, rgba(18,26,51,0) 0%, rgba(18,26,51,.85) 30%, rgba(18,26,51,.95) 100%);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(34,48,90,.45);
+        margin-top: 10px;
+      }
+      /* biar tombol tetep 2-3 baris rapi */
+      .btns{ gap:8px; }
+      .btns button{ width:100%; }
+    }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Kalkulator BTC</h1>
-    <div class="sub">Tulis BTC ↔ USDT otomatis • BUY fee potong BTC • SELL fee potong USDT • Auto-save</div>
-    <div class="mnav" role="tablist" aria-label="Menu">
+<div class="mnav" role="tablist" aria-label="Menu">
       <button class="mnavbtn active" data-view="buy" type="button">BUY</button>
       <button class="mnavbtn" data-view="sell" type="button">SELL</button>
       <button class="mnavbtn" data-view="settings" type="button">SETTINGS</button>
@@ -243,11 +260,7 @@
             <input id="buyUsdt" inputmode="decimal" placeholder="contoh: 69.8949" />
             <div class="small" id="noteBuyUsdtIdr"> </div>
           </div>
-          <div>
-            <label>—</label>
-            <input disabled value="Isi BTC utawa USDT (salah siji wae)" />
-          </div>
-        </div>
+</div>
 
         <div class="btns">
           <button class="primary" id="buyBtn">Hitung BUY</button>
@@ -315,11 +328,7 @@
             <input id="sellTargetNet" inputmode="decimal" placeholder="contoh: 50" />
             <div class="small" id="noteSellTargetIdr"> </div>
           </div>
-          <div>
-            <label>—</label>
-            <input disabled value="Isi iki → Harga SELL otomatis keisi" />
-          </div>
-        </div>
+</div>
 
 
         <div class="row">
