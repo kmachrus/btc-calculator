@@ -103,6 +103,63 @@
       .split{ grid-template-columns: 1fr; }
       .split .right{ position:static; }
     }
+
+    /* ===== Mobile UX: input area scroll, hasil tetap keliatan (tanpa scroll ke bawah) ===== */
+    @media (max-width: 860px){
+      /* card BUY/SELL dadi "panel" 1 layar */
+      body[data-view="buy"] .card[data-sec="buy"],
+      body[data-view="sell"] .card[data-sec="sell"]{
+        height: calc(100dvh - 170px); /* header + mnav kira-kira */
+        overflow: hidden;
+      }
+
+      /* split dadi 2 baris: input (scroll) + hasil (tetep) */
+      .split{
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 1fr auto;
+        height: 100%;
+        gap: 12px;
+      }
+      .split .left{
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-right: 2px;
+      }
+      .split .right{
+        position: static !important;
+        border-top: 1px solid rgba(34,48,90,.55);
+        padding-top: 10px;
+        background: rgba(12,20,48,.15);
+        border-radius: 14px;
+      }
+      /* rekapan tetep ringkes */
+      .split .right .box .v{ font-size:18px; }
+      .split .right .small{ font-size:13px; }
+      /* supaya tombol ora kegencet bawah layar */
+      .btns{ padding-bottom: 6px; }
+    }
+
+    /* Yen layar HP wide (landscape/tablet kecil), balik dadi kiri-kanan */
+    @media (min-width: 700px) and (max-width: 860px){
+      body[data-view="buy"] .card[data-sec="buy"],
+      body[data-view="sell"] .card[data-sec="sell"]{
+        height: auto;
+        overflow: visible;
+      }
+      .split{
+        grid-template-columns: 1fr 1fr !important;
+        grid-template-rows: auto;
+        height: auto;
+      }
+      .split .left{ overflow: visible; padding-right:0; }
+      .split .right{
+        position: sticky !important;
+        top: 74px;
+        border-top: none;
+        padding-top: 0;
+        background: transparent;
+      }
+    }
 </style>
 </head>
 <body>
